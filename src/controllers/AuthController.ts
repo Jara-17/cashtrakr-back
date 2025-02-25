@@ -222,21 +222,28 @@ export class AuthController {
     const { id } = req.user;
     const { name, lastname, email } = req.body;
 
-    const user = await User.findByPk(id);
-    const emailExists = await User.findOne({ where: { email } });
+    try {
+      const emailExists = await User.findOne({ where: { email } });
 
-    if (emailExists && emailExists.email !== user.email) {
-      const error = new Error("El email ya está registrado");
-      res.status(409).json({ error: error.message });
-      return;
+      if (emailExists && emailExists.id !== id) {
+        const error = new Error("El email ya está registrado");
+        res.status(409).json({ error: error.message });
+        return;
+      }
+
+      await User.update(
+        {
+          name,
+          lastname,
+          email,
+        },
+        { where: { id } }
+      );
+
+      res.json("Perfil actualizado correctamente");
+    } catch (error) {
+      // console.log(error);
+      res.status(500).json({ error: "Hubo un error" });
     }
-
-    user.name = name;
-    user.lastname = lastname;
-    user.email = email;
-
-    await user.save();
-
-    res.json("Perfil actualizado correctamente");
   };
 }
