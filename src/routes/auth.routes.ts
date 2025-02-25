@@ -66,11 +66,20 @@ router.post(
   AuthController.resetPasswordWithToken
 );
 
-router.get("/user", autenticate, AuthController.user);
+router.use(autenticate); // Todas las rutas que estén debajo de esta línea requerirán autenticación
+
+router.get("/user", AuthController.user);
+router.put(
+  "/user",
+  body("name").notEmpty().withMessage("El nombre no puede ir vacio"),
+  body("lastname").notEmpty().withMessage("El apellido no puede ir vacio"),
+  body("email").isEmail().withMessage("El email no es válido"),
+  handleInputErrors,
+  AuthController.updateProfile
+);
 
 router.post(
   "/update-password",
-  autenticate,
   body("current_password")
     .notEmpty()
     .withMessage("El password actual no puede estar vacio"),
@@ -83,7 +92,6 @@ router.post(
 
 router.post(
   "/check-password",
-  autenticate,
   body("password")
     .notEmpty()
     .withMessage("El password actual no puede estar vacio"),

@@ -217,4 +217,26 @@ export class AuthController {
 
     res.json("El password correcto");
   };
+
+  static updateProfile = async (req: Request, res: Response) => {
+    const { id } = req.user;
+    const { name, lastname, email } = req.body;
+
+    const user = await User.findByPk(id);
+    const emailExists = await User.findOne({ where: { email } });
+
+    if (emailExists) {
+      const error = new Error("El email ya está registrado");
+      res.status(409).json({ error: error.message });
+      return;
+    }
+
+    user.name = name;
+    user.lastname = lastname;
+    user.email = email;
+
+    await user.save();
+
+    res.json("Perfil actualizado correctamente");
+  };
 }
